@@ -109,21 +109,11 @@ jobs:
         with:
           key: release-windows-2025-x64-cpu
 
-      - name: Pack artifacts
-        id: pack_artifacts
-        run: |
-          $vsWhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-          $vsPath = & $vsWhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-          $ompDll = Get-ChildItem -Path "$vsPath\VC\Redist\MSVC\*\*\libomp140.x64.dll" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-          if (-not $ompDll) { Write-Error "libomp140.x64.dll not found under $vsPath"; exit 1 }
-          Copy-Item $ompDll.FullName -Destination .\build\bin\Release\
-          7z a -snl llama-bin-win-cpu-x64.zip .\build\bin\Release\*
-
       - name: Upload artifacts
         uses: actions/upload-artifact@v6
         with:
-          path: llama-bin-win-cpu-x64.zip
-          name: llama-bin-win-cpu-x64.zip
+          path: .\build\bin\Release\*
+          name: llama-bin-win-cpu-x64
 
   windows-cuda:
     needs: [check-release]
