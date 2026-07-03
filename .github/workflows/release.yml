@@ -112,8 +112,10 @@ jobs:
       - name: Pack artifacts
         id: pack_artifacts
         run: |
-          $ompDll = Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\*\debug_nonredist\x64\Microsoft.VC143.OpenMP.LLVM\libomp140.x64.dll" | Select-Object -First 1
-          if (-not $ompDll) { Write-Error "libomp140.x64.dll not found"; exit 1 }
+          $vsWhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vsPath = & $vsWhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          $ompDll = Get-ChildItem -Path "$vsPath\VC\Redist\MSVC\*\*\libomp140.x64.dll" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $ompDll) { Write-Error "libomp140.x64.dll not found under $vsPath"; exit 1 }
           Copy-Item $ompDll.FullName -Destination .\build\bin\Release\
           7z a -snl llama-bin-win-cpu-x64.zip .\build\bin\Release\*
 
