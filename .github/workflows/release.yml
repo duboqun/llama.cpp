@@ -112,7 +112,9 @@ jobs:
       - name: Pack artifacts
         id: pack_artifacts
         run: |
-          Copy-Item "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\14.44.35112\debug_nonredist\x64\Microsoft.VC143.OpenMP.LLVM\libomp140.x64.dll" -Destination .\build\bin\Release\
+          $ompDll = Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\*\debug_nonredist\x64\Microsoft.VC143.OpenMP.LLVM\libomp140.x64.dll" | Select-Object -First 1
+          if (-not $ompDll) { Write-Error "libomp140.x64.dll not found"; exit 1 }
+          Copy-Item $ompDll.FullName -Destination .\build\bin\Release\
           7z a -snl llama-bin-win-cpu-x64.zip .\build\bin\Release\*
 
       - name: Upload artifacts
